@@ -1,7 +1,7 @@
 # PSSAK - PowerShell's Swiss Army Knife
 
 <div align="center">
-  <img src=".assets/PSSAK-LOGO.png" alt="PSSAK Logo" width="200" />
+  <img src=".assets/PSSAK-LOGO-transparent.png" alt="PSSAK Logo" width="200" />
 </div>
 
 ## Overview

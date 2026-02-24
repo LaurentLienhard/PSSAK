@@ -1,8 +1,9 @@
 BeforeAll {
-    $projectPath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\'
-    $sourcePath = Join-Path -Path $projectPath -ChildPath 'source\Classes'
-
-    . $($sourcePath + '\01_ADComputer.ps1')
+    # Load from source to ensure the class is properly initialized
+    $projectPath = Join-Path -Path $PSScriptRoot -ChildPath '../../..'
+    $sourcePath = Join-Path -Path $projectPath -ChildPath 'source/Classes'
+    $classPath = Join-Path -Path $sourcePath -ChildPath '01_ADComputer.ps1'
+    . $classPath
 }
 
 Describe 'ADComputer Class - Unit Tests' {
@@ -15,7 +16,7 @@ Describe 'ADComputer Class - Unit Tests' {
             $computer.ComputerName | Should -Be 'PC001'
             $computer.Credential | Should -BeNullOrEmpty
             $computer.DomainController | Should -BeNullOrEmpty
-            $computer.MemberOf | Should -Not -BeNullOrEmpty
+            $computer.MemberOf | Should -BeOfType [System.Collections.Generic.List[string]]
             $computer.MemberOf.Count | Should -Be 0
         }
 
@@ -26,6 +27,7 @@ Describe 'ADComputer Class - Unit Tests' {
             $computer.ComputerName | Should -Be 'PC001'
             $computer.Credential | Should -Not -BeNullOrEmpty
             $computer.Credential.UserName | Should -Be 'user'
+            $computer.MemberOf | Should -BeOfType [System.Collections.Generic.List[string]]
         }
 
         It 'Should create an ADComputer instance with ComputerName, Credential, and DomainController' {
@@ -35,6 +37,7 @@ Describe 'ADComputer Class - Unit Tests' {
             $computer.ComputerName | Should -Be 'PC001'
             $computer.Credential | Should -Not -BeNullOrEmpty
             $computer.DomainController | Should -Be 'DC01.contoso.com'
+            $computer.MemberOf | Should -BeOfType [System.Collections.Generic.List[string]]
         }
     }
 
@@ -56,7 +59,7 @@ Describe 'ADComputer Class - Unit Tests' {
                 Description            = 'Test PC'
                 Location               = 'Building A'
                 IPv4Address            = '192.168.1.100'
-                ObjectSID              = [System.Security.Principal.SecurityIdentifier]::new('S-1-5-21-3623811015-3361044348-30300820-1013')
+                ObjectSID              = [psobject]@{ Value = 'S-1-5-21-3623811015-3361044348-30300820-1013' }
                 Created                = [datetime]::new(2023, 1, 1)
                 Modified               = [datetime]::new(2024, 1, 10)
             }
@@ -280,7 +283,7 @@ Describe 'ADComputer Class - Unit Tests' {
                 Description            = 'Test PC'
                 Location               = 'Building A'
                 IPv4Address            = '192.168.1.100'
-                ObjectSID              = [System.Security.Principal.SecurityIdentifier]::new('S-1-5-21-3623811015-3361044348-30300820-1013')
+                ObjectSID              = [psobject]@{ Value = 'S-1-5-21-3623811015-3361044348-30300820-1013' }
                 Created                = [datetime]::new(2023, 1, 1)
                 Modified               = [datetime]::new(2024, 1, 10)
             }
@@ -303,8 +306,8 @@ Describe 'ADComputer Class - Unit Tests' {
 
         It 'Should retrieve and populate group membership' {
             $mockGroups = @(
-                @{ DistinguishedName = 'CN=Group1,OU=Groups,DC=contoso,DC=com' },
-                @{ DistinguishedName = 'CN=Group2,OU=Groups,DC=contoso,DC=com' }
+                [psobject]@{ DistinguishedName = 'CN=Group1,OU=Groups,DC=contoso,DC=com' },
+                [psobject]@{ DistinguishedName = 'CN=Group2,OU=Groups,DC=contoso,DC=com' }
             )
 
             Mock -CommandName Get-ADPrincipalGroupMembership -MockWith { return $mockGroups }
@@ -348,8 +351,8 @@ Describe 'ADComputer Class - Unit Tests' {
         It 'Should initialize MemberOf as a List[string]' {
             $computer = [ADComputer]::new('PC001')
 
-            $computer.MemberOf | Should -Not -BeNullOrEmpty
             $computer.MemberOf | Should -BeOfType [System.Collections.Generic.List[string]]
+            $computer.MemberOf.Count | Should -Be 0
         }
 
         It 'Should have null/empty string properties initially' {

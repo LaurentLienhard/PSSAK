@@ -1,0 +1,237 @@
+TOPIC
+    about_ADComputer
+
+SHORT DESCRIPTION
+    Representa um objecto de computador do Active Directory com métodos de gestão e manipulação.
+
+LONG DESCRIPTION
+    A classe ADComputer é um wrapper em torno de objectos de computador do Active Directory. Encapsula
+    propriedades recuperadas do AD e fornece métodos para consultar, activar, desactivar, mover,
+    renomear e eliminar objectos de computador no Active Directory. Todos os métodos interagem
+    directamente com o AD utilizando cmdlets PowerShell do Active Directory padrão.
+
+    A classe suporta três padrões de construtores para acomodar diferentes casos de utilização:
+    - Instanciação básica apenas com o nome do computador
+    - Instanciação melhorada com credenciais personalizadas
+    - Controlo total com credenciais personalizadas e controlador de domínio alvo
+
+CONSTRUCTORS
+    ADComputer([string]$Name)
+        Cria uma instância com o nome do computador especificado apenas.
+        Utiliza as credenciais padrão da sessão actual.
+
+    ADComputer([string]$Name, [PSCredential]$Credential)
+        Cria uma instância com o nome do computador especificado e as credenciais.
+        As credenciais serão utilizadas para todas as operações do AD.
+
+    ADComputer([string]$Name, [PSCredential]$Credential, [string]$DomainController)
+        Cria uma instância com o nome do computador, credenciais e controlador de domínio alvo.
+        Permite consultar um controlador de domínio específico em cenários de múltiplas florestas.
+
+PROPERTIES
+    ComputerName [string]
+        O nome NetBIOS do objecto do computador no Active Directory.
+
+    DNSHostName [string]
+        O nome de domínio totalmente qualificado (FQDN) do computador.
+
+    OperatingSystem [string]
+        O nome do sistema operativo (por exemplo, 'Windows 10 Enterprise').
+
+    OperatingSystemVersion [string]
+        A versão do sistema operativo (por exemplo, '10.0 (22H2)').
+
+    DistinguishedName [string]
+        O caminho do nome único (DN) completo do objecto no Active Directory.
+
+    Enabled [bool]
+        Indica se a conta do computador está activada no Active Directory.
+
+    LastLogonDate [datetime]
+        A data e hora do último acesso do computador ao domínio.
+
+    Description [string]
+        Uma descrição em texto livre do objecto do computador.
+
+    Location [string]
+        A localização física ou local do escritório do computador.
+
+    IPv4Address [string]
+        O endereço IPv4 associado ao objecto do computador.
+
+    SID [string]
+        O identificador de segurança (SID) do objecto do computador.
+
+    Created [datetime]
+        A data e hora da criação do objecto no Active Directory.
+
+    Modified [datetime]
+        A data e hora da última modificação do objecto.
+
+    MemberOf [System.Collections.Generic.List[string]]
+        Uma lista de nomes únicos dos grupos dos quais o computador é membro.
+
+METHODS
+    Get()
+        Recupera o objecto do computador do Active Directory e popula todas as propriedades.
+        Consulta o AD utilizando Get-ADComputer e actualiza o objecto com valores actuais.
+
+        Exemplo:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Get()
+            Write-Output $computer.OperatingSystem
+
+    Enable()
+        Activa a conta do computador no Active Directory.
+        Define a propriedade Enabled como $true.
+
+        Exemplo:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Enable()
+
+    Disable()
+        Desactiva a conta do computador no Active Directory.
+        Define a propriedade Enabled como $false.
+
+        Exemplo:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Disable()
+
+    Move([string]$TargetOU)
+        Move o objecto do computador para uma Unidade Organizacional (UO) diferente.
+        Requer o nome único da UO de destino.
+
+        Exemplo:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Get()
+            $computer.Move('OU=Workstations,OU=Computers,DC=contoso,DC=com')
+
+    Delete()
+        Elimina o objecto do computador do Active Directory.
+        AVISO: Esta é uma operação destrutiva e não pode ser desfeita.
+
+        Exemplo:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Delete()
+
+    Update()
+        Actualiza as propriedades do objecto do computador no Active Directory.
+        Actualmente, apenas as propriedades Description e Location podem ser actualizadas através deste método.
+        Modifique as propriedades directamente e chame Update() para persistir as alterações.
+
+        Exemplo:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Get()
+            $computer.Description = 'Impressora da sala de conferências'
+            $computer.Location = 'Edifício A, Sala 101'
+            $computer.Update()
+
+    Rename([string]$NewName)
+        Renomeia o objecto do computador no Active Directory.
+        Actualiza a propriedade ComputerName após renomeação bem-sucedida.
+
+        Exemplo:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Rename('PC002')
+
+    Refresh()
+        Actualiza todas as propriedades re-obtendo dados do Active Directory.
+        Chama Get() internamente para recarregar dados actuais sem criar um novo objecto.
+
+        Exemplo:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Get()
+            # ... tempo passa ...
+            $computer.Refresh()
+
+    GetGroupMembership()
+        Recupera todas as associações de grupo do objecto do computador.
+        Retorna um System.Collections.Generic.List[string] de nomes únicos de grupos.
+
+        Exemplo:
+            $computer = [ADComputer]::new('PC001')
+            $groups = $computer.GetGroupMembership()
+            $groups | ForEach-Object { Write-Output $_ }
+
+    ToString()
+        Retorna o nome do computador como representação em string do objecto.
+
+        Exemplo:
+            $computer = [ADComputer]::new('PC001')
+            Write-Output $computer.ToString()
+
+EXAMPLES
+    Utilização Básica:
+        # Crie um objecto de computador e recupere as suas propriedades
+        $pc = [ADComputer]::new('WORKSTATION-01')
+        $pc.Get()
+        Write-Output "Computador: $($pc.ComputerName), SO: $($pc.OperatingSystem)"
+
+    Activar/Desactivar Computador:
+        # Desactive uma conta de computador
+        $pc = [ADComputer]::new('LAPTOP-123')
+        $pc.Disable()
+        Write-Output "Computador desactivado: $($pc.Enabled)"
+
+    Mover Computador para UO Diferente:
+        # Reorganize computadores movendo-os para UOs apropriadas
+        $pc = [ADComputer]::new('PC-OLD')
+        $pc.Get()
+        $pc.Move('OU=Archived,OU=Workstations,DC=contoso,DC=com')
+
+    Actualizar Propriedades do Computador:
+        # Actualizar informações de descrição e localização
+        $pc = [ADComputer]::new('WORKSTATION-05')
+        $pc.Get()
+        $pc.Description = 'Estação de trabalho do departamento de engenharia'
+        $pc.Location = 'Edifício C, Piso 3, Sala 305'
+        $pc.Update()
+
+    Consultar Associações de Grupo:
+        # Verifique a que grupos um computador pertence
+        $pc = [ADComputer]::new('SERVER-01')
+        $groups = $pc.GetGroupMembership()
+        foreach ($group in $groups)
+        {
+            Write-Output "Membro de: $group"
+        }
+
+    Com Credenciais Personalizadas:
+        # Utilize credenciais específicas para cenários de múltiplas florestas
+        $cred = Get-Credential
+        $pc = [ADComputer]::new('PC-REMOTE', $cred, 'DC.remote.forest.local')
+        $pc.Get()
+
+NOTE
+    - Requer o módulo PowerShell do Active Directory (parte do RSAT)
+    - Versão mínima do PowerShell: 7.0
+    - Todos os métodos lançarão erros em caso de falha; o tratamento adequado de erros é recomendado
+    - Os métodos utilizam -ErrorAction Stop internamente, portanto, blocos try-catch são aconselhados
+    - Todas as operações requerem permissões apropriadas do Active Directory
+    - O parâmetro Credential é oculto e não é retornado pela exibição padrão
+
+TROUBLESHOOTING
+    Objecto não encontrado:
+        Se Get() lançar um erro indicando que o objecto não foi encontrado, verifique:
+        - O nome do computador está soletrado correctamente
+        - O computador existe no domínio especificado
+        - Tem permissões para consultar o Active Directory
+
+    Acesso Negado:
+        Certifique-se de que tem as permissões necessárias do Active Directory:
+        - Permissões de leitura para operações Get
+        - Permissões de modificação para operações Enable/Disable/Update/Rename
+        - Permissões de eliminação para operações Delete
+
+SEE ALSO
+    - Get-ADComputer
+    - Set-ADComputer
+    - Enable-ADAccount
+    - Disable-ADAccount
+    - Move-ADObject
+    - Rename-ADObject
+    - Remove-ADComputer
+    - Get-ADPrincipalGroupMembership
+
+KEYWORDS
+    ActiveDirectory, ADComputer, Computador, Gestão, Activar, Desactivar, Mover, Renomear

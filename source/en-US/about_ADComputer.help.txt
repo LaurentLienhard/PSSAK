@@ -1,0 +1,237 @@
+TOPIC
+    about_ADComputer
+
+SHORT DESCRIPTION
+    Represents an Active Directory Computer object with methods for management and manipulation.
+
+LONG DESCRIPTION
+    The ADComputer class is a wrapper around Active Directory computer objects. It encapsulates
+    properties retrieved from AD and provides methods for querying, enabling, disabling, moving,
+    renaming, and deleting computer objects in Active Directory. All methods interact directly
+    with AD using standard PowerShell Active Directory cmdlets.
+
+    The class supports three constructor patterns to accommodate different use cases:
+    - Basic instantiation with computer name only
+    - Enhanced instantiation with custom credentials
+    - Full control with custom credentials and target domain controller
+
+CONSTRUCTORS
+    ADComputer([string]$Name)
+        Creates an instance with the specified computer name only.
+        Uses default credentials from the current session.
+
+    ADComputer([string]$Name, [PSCredential]$Credential)
+        Creates an instance with the specified computer name and credentials.
+        Credentials will be used for all AD operations.
+
+    ADComputer([string]$Name, [PSCredential]$Credential, [string]$DomainController)
+        Creates an instance with computer name, credentials, and target domain controller.
+        Allows querying a specific domain controller in multi-forest or multi-domain scenarios.
+
+PROPERTIES
+    ComputerName [string]
+        The NetBIOS name of the computer object in Active Directory.
+
+    DNSHostName [string]
+        The fully qualified domain name (FQDN) of the computer.
+
+    OperatingSystem [string]
+        The name of the operating system (e.g., 'Windows 10 Enterprise').
+
+    OperatingSystemVersion [string]
+        The version of the operating system (e.g., '10.0 (22H2)').
+
+    DistinguishedName [string]
+        The complete distinguished name (DN) path of the object in Active Directory.
+
+    Enabled [bool]
+        Indicates whether the computer account is enabled in Active Directory.
+
+    LastLogonDate [datetime]
+        The date and time when the computer last logged on to the domain.
+
+    Description [string]
+        A free-text description of the computer object.
+
+    Location [string]
+        The physical location or office location of the computer.
+
+    IPv4Address [string]
+        The IPv4 address associated with the computer object.
+
+    SID [string]
+        The security identifier (SID) of the computer object.
+
+    Created [datetime]
+        The date and time when the object was created in Active Directory.
+
+    Modified [datetime]
+        The date and time when the object was last modified.
+
+    MemberOf [System.Collections.Generic.List[string]]
+        A list of distinguished names of groups the computer is a member of.
+
+METHODS
+    Get()
+        Retrieves the computer object from Active Directory and populates all properties.
+        Queries the AD using Get-ADComputer and updates the object with current values.
+
+        Example:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Get()
+            Write-Output $computer.OperatingSystem
+
+    Enable()
+        Enables the computer account in Active Directory.
+        Sets the Enabled property to $true.
+
+        Example:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Enable()
+
+    Disable()
+        Disables the computer account in Active Directory.
+        Sets the Enabled property to $false.
+
+        Example:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Disable()
+
+    Move([string]$TargetOU)
+        Moves the computer object to a different Organizational Unit (OU).
+        Requires the distinguished name of the target OU.
+
+        Example:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Get()
+            $computer.Move('OU=Workstations,OU=Computers,DC=contoso,DC=com')
+
+    Delete()
+        Deletes the computer object from Active Directory.
+        WARNING: This is a destructive operation and cannot be undone.
+
+        Example:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Delete()
+
+    Update()
+        Updates the computer object properties in Active Directory.
+        Only Description and Location properties are currently updateable via this method.
+        Modify the properties directly, then call Update() to persist changes.
+
+        Example:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Get()
+            $computer.Description = 'Conference Room Printer'
+            $computer.Location = 'Building A, Room 101'
+            $computer.Update()
+
+    Rename([string]$NewName)
+        Renames the computer object in Active Directory.
+        Updates the ComputerName property after successful rename.
+
+        Example:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Rename('PC002')
+
+    Refresh()
+        Refreshes all properties by re-fetching data from Active Directory.
+        Calls Get() internally to reload current data without creating a new object.
+
+        Example:
+            $computer = [ADComputer]::new('PC001')
+            $computer.Get()
+            # ... time passes ...
+            $computer.Refresh()
+
+    GetGroupMembership()
+        Retrieves all group memberships for the computer object.
+        Returns a System.Collections.Generic.List[string] of group distinguished names.
+
+        Example:
+            $computer = [ADComputer]::new('PC001')
+            $groups = $computer.GetGroupMembership()
+            $groups | ForEach-Object { Write-Output $_ }
+
+    ToString()
+        Returns the computer name as the string representation of the object.
+
+        Example:
+            $computer = [ADComputer]::new('PC001')
+            Write-Output $computer.ToString()
+
+EXAMPLES
+    Basic Usage:
+        # Create a computer object and retrieve its properties
+        $pc = [ADComputer]::new('WORKSTATION-01')
+        $pc.Get()
+        Write-Output "Computer: $($pc.ComputerName), OS: $($pc.OperatingSystem)"
+
+    Enable/Disable Computer:
+        # Disable a computer account
+        $pc = [ADComputer]::new('LAPTOP-123')
+        $pc.Disable()
+        Write-Output "Computer disabled: $($pc.Enabled)"
+
+    Move Computer to Different OU:
+        # Reorganize computers by moving to appropriate OUs
+        $pc = [ADComputer]::new('PC-OLD')
+        $pc.Get()
+        $pc.Move('OU=Archived,OU=Workstations,DC=contoso,DC=com')
+
+    Update Computer Properties:
+        # Update description and location information
+        $pc = [ADComputer]::new('WORKSTATION-05')
+        $pc.Get()
+        $pc.Description = 'Engineering Department Workstation'
+        $pc.Location = 'Building C, Floor 3, Room 305'
+        $pc.Update()
+
+    Query Group Memberships:
+        # Check which groups a computer belongs to
+        $pc = [ADComputer]::new('SERVER-01')
+        $groups = $pc.GetGroupMembership()
+        foreach ($group in $groups)
+        {
+            Write-Output "Member of: $group"
+        }
+
+    With Custom Credentials:
+        # Use specific credentials for multi-forest scenarios
+        $cred = Get-Credential
+        $pc = [ADComputer]::new('PC-REMOTE', $cred, 'DC.remote.forest.local')
+        $pc.Get()
+
+NOTE
+    - Requires the Active Directory PowerShell module (part of RSAT)
+    - Minimum PowerShell version: 7.0
+    - All methods will throw errors on failure; proper error handling is recommended
+    - Methods use -ErrorAction Stop internally, so try-catch blocks are advised
+    - All operations require appropriate Active Directory permissions
+    - The Credential parameter is hidden and not returned by default display
+
+TROUBLESHOOTING
+    Object not found:
+        If Get() throws an error about the object not being found, verify:
+        - The computer name is spelled correctly
+        - The computer exists in the specified domain
+        - You have permissions to query Active Directory
+
+    Access Denied:
+        Ensure you have the necessary Active Directory permissions:
+        - Read permissions for Get operations
+        - Modify permissions for Enable/Disable/Update/Rename operations
+        - Delete permissions for Delete operations
+
+SEE ALSO
+    - Get-ADComputer
+    - Set-ADComputer
+    - Enable-ADAccount
+    - Disable-ADAccount
+    - Move-ADObject
+    - Rename-ADObject
+    - Remove-ADComputer
+    - Get-ADPrincipalGroupMembership
+
+KEYWORDS
+    ActiveDirectory, ADComputer, Computer, Management, Enable, Disable, Move, Rename

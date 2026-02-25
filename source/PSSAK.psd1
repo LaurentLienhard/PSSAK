@@ -30,10 +30,10 @@ CompanyName = 'LIENHARD Laurent'
 Copyright = '(c) LIENHARD Laurent. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'PSSAK is the PowerShell''s Swiss Army Knife !'
+Description = 'PSSAK (PowerShell Swiss Army Knife) is a PowerShell resource module providing foundational utilities for other modules: structured logging, progress bars, output formatting, and more.'
 
 # Minimum version of the PowerShell engine required by this module
-PowerShellVersion = '5.0'
+PowerShellVersion = '7.0'
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
@@ -95,13 +95,13 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('Logging', 'ProgressBar', 'Utilities', 'ResourceModule', 'PowerShell', 'Toolkit')
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        LicenseUri = 'https://github.com/LaurentLienhard/PSSAK/blob/main/LICENSE'
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        ProjectUri = 'https://github.com/LaurentLienhard/PSSAK'
 
         # A URL to an icon representing this module.
         # IconUri = ''

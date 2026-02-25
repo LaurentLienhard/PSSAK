@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PSSAK (PowerShell's Swiss Army Knife) is a PowerShell administration tools module. The repository is hosted at https://github.com/LaurentLienhard/PSSAK.
+PSSAK (PowerShell Swiss Army Knife) is a PowerShell **resource module** providing foundational utilities for other modules: structured logging, progress bars, output formatting, and more. It is not tied to any specific technology (no Active Directory, no specific platform). The repository is hosted at https://github.com/LaurentLienhard/PSSAK.
 
 ## PowerShell Module Conventions
 
@@ -53,20 +53,20 @@ When developing this module, follow standard PowerShell module structure:
 **Commit Message Format:**
 
 ```
-feat: Add Get-PSAKUser function — Retrieves user information from Active Directory
-This function queries AD for user objects and returns formatted PSCustomObject
-with Name, SID, and Enabled properties. Includes full Pester test coverage (85%+).
+feat: Add Write-PSSAKLog function — Writes structured log entries with severity levels
+Supports Information, Warning, and Error severity levels. Output targets are
+configurable (console, file). Includes full Pester test coverage (85%+).
 ```
 
 ```
-fix: Correct pipeline handling in Set-PSAKPermission — Fixes issue #42
-Previously failed when receiving objects via pipeline. Now properly handles
-ValueFromPipeline parameter attribute and preserves object properties.
+fix: Correct file rotation in Write-PSSAKLog — Fixes issue #12
+Log file was not rotating correctly when MaxSizeMB was reached. Now properly
+checks file size before each write and rotates when threshold is exceeded.
 ```
 
 ```
-docs: Add French help files for Get-PSAKUser — Completes i18n requirement
-Added source/fr-FR/Get-PSAKUser.help.txt with complete French documentation
+docs: Add French help files for Write-PSSAKLog — Completes i18n requirement
+Added source/fr-FR/Write-PSSAKLog.help.txt with complete French documentation
 to meet i18n release requirement.
 ```
 
@@ -92,11 +92,11 @@ The PSSAK module must be available in **all four languages** before any `git pus
 1. **English** (en-US)
 2. **French** (fr-FR)
 3. **German** (de-DE)
-4. **Portuguese** (pt-BR)
+4. **Portuguese** (pt-PT)
 
 ### Requirements for Help Files
 
-- Help files MUST be placed in language-specific directories: `source/en-US/`, `source/fr-FR/`, `source/de-DE/`, `source/pt-BR/`
+- Help files MUST be placed in language-specific directories: `source/en-US/`, `source/fr-FR/`, `source/de-DE/`, `source/pt-PT/`
 - Each function public help must have corresponding `.ps1xml` documentation files in **all four language directories**
 - Use `New-ExternalHelp` to generate XML help files from comment-based help
 
@@ -236,9 +236,9 @@ Write-Error "Failed to process '$Name' in domain '$($env:USERDOMAIN)': $($_.Exce
 - Prefix class files with numbers for load order (e.g., `01_Server.ps1`, `02_Service.ps1`)
 - Use `HIDDEN` keyword for internal properties (e.g., credentials)
 
-### Object-Oriented Design Philosophy
+### Design Philosophy
 
-**Prefer classes over functions whenever possible.** Use classes for entities with multiple related properties or state. Functions are acceptable for simple stateless utilities, formatters, validators, or orchestration.
+**Functions are the primary building block of this module.** PSSAK exposes callable utilities — use functions for all public API surface. Classes are acceptable for complex internal state management (e.g. a logger that holds a file handle, a progress tracker that maintains state across calls), but they must never be the only way to interact with a feature. Always wrap classes in public functions.
 
 ### PowerShell Compatibility
 

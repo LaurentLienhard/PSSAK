@@ -10,58 +10,11 @@
 
 ## Key Features
 
-- **Progress Bars** - Display rich, customizable progress bars with automatic ETA for long-running operations
+- **Structured Logging** - Write consistent log entries with severity levels, timestamps, and configurable targets (console, file, event log)
+- **Progress Bars** - Display rich, customizable progress bars for long-running operations
+- **Output Formatting** - Helpers for tables, banners, colored output, and structured messages
 - **Multi-Language Support** - Available in English, French, German, and Portuguese
 - **Production-Ready** - Full error handling, comprehensive testing (85%+ code coverage), and PSScriptAnalyzer compliance
-- **Extensive Documentation** - Complete help files in 4 languages
-
-## Current Capabilities
-
-### `Write-PSSAKProgressBar`
-
-Displays a progress bar with automatic percentage calculation and optional estimated time remaining (ETA).
-
-| Parameter | Type | Description |
-|---|---|---|
-| `-Activity` | String | Title displayed above the bar *(mandatory)* |
-| `-Current` | Int32 | Current item index |
-| `-Total` | Int32 | Total number of items |
-| `-Status` | String | Text below the bar (default: `Current / Total`) |
-| `-Id` | Int32 | Bar identifier for nested bars (default: `0`) |
-| `-ParentId` | Int32 | Parent bar identifier (default: `-1`) |
-| `-StartTime` | DateTime | Operation start time — enables ETA calculation |
-| `-Completed` | Switch | Closes the bar cleanly |
-| `-NoTimeEstimate` | Switch | Suppresses ETA even when `-StartTime` is provided |
-
-#### Example — Simple progress bar
-
-```powershell
-$files = Get-ChildItem -Path C:\Logs
-$start = [datetime]::UtcNow
-$i = 0
-foreach ($file in $files)
-{
-    $i++
-    Write-PSSAKProgressBar -Activity 'Processing log files' `
-        -Current $i -Total $files.Count -Status $file.Name -StartTime $start
-}
-Write-PSSAKProgressBar -Activity 'Processing log files' -Completed
-```
-
-#### Example — Nested progress bars
-
-```powershell
-for ($s = 1; $s -le $servers.Count; $s++)
-{
-    Write-PSSAKProgressBar -Activity 'Servers' -Current $s -Total $servers.Count -Id 1
-    for ($f = 1; $f -le $files.Count; $f++)
-    {
-        Write-PSSAKProgressBar -Activity 'Files' -Current $f -Total $files.Count -Id 2 -ParentId 1
-    }
-    Write-PSSAKProgressBar -Activity 'Files' -Completed -Id 2
-}
-Write-PSSAKProgressBar -Activity 'Servers' -Completed -Id 1
-```
 
 ## Requirements
 
@@ -73,10 +26,23 @@ Write-PSSAKProgressBar -Activity 'Servers' -Completed -Id 1
 Install-Module -Name PSSAK
 ```
 
+## Usage
+
+```powershell
+Import-Module PSSAK
+
+# Logging
+Write-PSSAKLog -Message 'Starting process' -Level Information
+Write-PSSAKLog -Message 'Something went wrong' -Level Error
+
+# Progress
+Show-PSSAKProgress -Activity 'Processing files' -PercentComplete 42
+```
+
 ## Roadmap
 
-- [x] Progress bar (`Write-PSSAKProgressBar`)
 - [ ] Structured logging (file, console, event log)
+- [ ] Customizable progress bars
 - [ ] Output formatting utilities (tables, banners, colored output)
 - [ ] Timer / stopwatch helpers
 - [ ] Configuration management utilities

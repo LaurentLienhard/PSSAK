@@ -1,4 +1,6 @@
 output/
+.DS_Store
+.claude/
 
 **.bak
 *.local.*

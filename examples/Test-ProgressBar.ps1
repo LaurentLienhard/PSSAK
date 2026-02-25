@@ -1,9 +1,14 @@
 # Exemples d'utilisation de Write-PSSAKProgressBar
 
 # ============================================================================
+# Charger le module PSSAK
+# ============================================================================
+Import-Module -fullyQualifiedName ./output/module/PSSAK/0.0.1/pssak.psm1 -Force
+
+# ============================================================================
 # Exemple 1 : Barre de progression simple
 # ============================================================================
-Write-Host "=== Exemple 1: Barre de progression simple ===" -ForegroundColor Cyan
+Write-Verbose "=== Exemple 1: Barre de progression simple ===" -Verbose
 
 $items = @('fichier1.txt', 'fichier2.txt', 'fichier3.txt', 'fichier4.txt', 'fichier5.txt')
 $total = $items.Count
@@ -14,12 +19,12 @@ for ($i = 1; $i -le $total; $i++) {
 }
 
 Write-PSSAKProgressBar -Activity "Traitement des fichiers" -Completed
-Write-Host "✓ Traitement terminé!`n" -ForegroundColor Green
+Write-Verbose "✓ Traitement terminé!`n" -Verbose
 
 # ============================================================================
 # Exemple 2 : Avec estimation de temps restant (ETA)
 # ============================================================================
-Write-Host "=== Exemple 2: Avec estimation de temps restant ===" -ForegroundColor Cyan
+Write-Verbose "=== Exemple 2: Avec estimation de temps restant ===" -Verbose
 
 $startTime = [datetime]::UtcNow
 $itemsToProcess = 50
@@ -35,12 +40,12 @@ for ($i = 1; $i -le $itemsToProcess; $i++) {
 }
 
 Write-PSSAKProgressBar -Activity "Téléchargement" -Completed
-Write-Host "✓ Téléchargement terminé!`n" -ForegroundColor Green
+Write-Verbose "✓ Téléchargement terminé!`n" -Verbose
 
 # ============================================================================
 # Exemple 3 : Barres de progression imbriquées (parent/enfant)
 # ============================================================================
-Write-Host "=== Exemple 3: Barres imbriquées ===" -ForegroundColor Cyan
+Write-Verbose "=== Exemple 3: Barres imbriquées ===" -Verbose
 
 $servers = @('SERVER1', 'SERVER2', 'SERVER3')
 $filesPerServer = 5
@@ -69,12 +74,12 @@ for ($s = 1; $s -le $servers.Count; $s++) {
 }
 
 Write-PSSAKProgressBar -Activity "Serveurs" -Completed -Id 1
-Write-Host "✓ Tous les serveurs traités!`n" -ForegroundColor Green
+Write-Verbose "✓ Tous les serveurs traités!`n" -Verbose
 
 # ============================================================================
 # Exemple 4 : Avec status personnalisé
 # ============================================================================
-Write-Host "=== Exemple 4: Status personnalisé ===" -ForegroundColor Cyan
+Write-Verbose "=== Exemple 4: Status personnalisé ===" -Verbose
 
 $total = 100
 $startTime = [datetime]::UtcNow
@@ -94,12 +99,12 @@ for ($i = 1; $i -le $total; $i++) {
 }
 
 Write-PSSAKProgressBar -Activity "Processing" -Completed
-Write-Host "✓ Traitement complété!`n" -ForegroundColor Green
+Write-Verbose "✓ Traitement complété!`n" -Verbose
 
 # ============================================================================
 # Exemple 5 : Cas réel - Copie de fichiers
 # ============================================================================
-Write-Host "=== Exemple 5: Cas réel - Copie de fichiers ===" -ForegroundColor Cyan
+Write-Verbose "=== Exemple 5: Cas réel - Copie de fichiers ===" -Verbose
 
 # Créer des fichiers de test
 $testDir = "$HOME/test_progress"
@@ -116,7 +121,7 @@ $files = Get-ChildItem -Path $testDir -File
 $total = $files.Count
 $startTime = [datetime]::UtcNow
 
-Write-Host "Copie de $total fichiers..." -ForegroundColor Yellow
+Write-Verbose "Copie de $total fichiers..." -Verbose
 
 for ($i = 0; $i -lt $total; $i++) {
     $file = $files[$i]
@@ -134,9 +139,9 @@ for ($i = 0; $i -lt $total; $i++) {
 }
 
 Write-PSSAKProgressBar -Activity "Copie de fichiers" -Completed
-Write-Host "✓ Copie terminée!`n" -ForegroundColor Green
+Write-Verbose "✓ Copie terminée!`n" -Verbose
 
 # Nettoyer
 Remove-Item -Path $testDir -Recurse -Force
 
-Write-Host "=== Tous les exemples exécutés avec succès! ===" -ForegroundColor Green
+Write-Verbose "=== Tous les exemples exécutés avec succès! ===" -Verbose

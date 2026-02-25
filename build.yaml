@@ -93,6 +93,12 @@ Pester:
   OutputFormat: NUnitXML
   # Excludes one or more paths from being used to calculate code coverage.
   ExcludeFromCodeCoverage:
+  # Specify which files to measure for code coverage
+  CodeCoverage:
+    - source/Public/*.ps1
+    - source/Private/*.ps1
+    - source/Classes/*.ps1
+    - source/Enum/*.ps1
 
   # If no scripts are defined the default is to use all the tests under the project's
   # tests folder or source folder (if present). Test script paths can be defined to

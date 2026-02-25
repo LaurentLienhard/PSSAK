@@ -1,4 +1,4 @@
-# PSSAK - PowerShell's Swiss Army Knife
+# PSSAK - PowerShell Swiss Army Knife
 
 <div align="center">
   <img src=".assets/PSSAK-LOGO-transparent.png" alt="PSSAK Logo" width="200" />
@@ -6,67 +6,80 @@
 
 ## Overview
 
-**PSSAK** (PowerShell's Swiss Army Knife) is a comprehensive PowerShell module designed to simplify and standardize common IT administration tasks. It provides a complete toolkit for system administrators, with a strong focus on Active Directory management through an object-oriented approach.
+**PSSAK** (PowerShell Swiss Army Knife) is a PowerShell **resource module** designed to provide foundational utilities that other modules can rely on. Instead of implementing repetitive boilerplate in every module, import PSSAK and get consistent, tested, and ready-to-use functions for logging, progress display, output formatting, and more.
 
 ## Key Features
 
-✅ **Object-Oriented Design** - PowerShell classes for better modularity and code reusability
-✅ **Multi-Language Support** - Available in English, French, German, and Portuguese
-✅ **Production-Ready** - Full error handling, comprehensive testing (85%+ code coverage), and PSScriptAnalyzer compliance
-✅ **Extensive Documentation** - Complete help files in 4 languages
-✅ **Active Directory Management** - Manage computer objects, users, groups, and permissions
+- **Progress Bars** - Display rich, customizable progress bars with automatic ETA for long-running operations
+- **Multi-Language Support** - Available in English, French, German, and Portuguese
+- **Production-Ready** - Full error handling, comprehensive testing (85%+ code coverage), and PSScriptAnalyzer compliance
+- **Extensive Documentation** - Complete help files in 4 languages
 
 ## Current Capabilities
 
-### ADComputer Class
-Wrapper for Active Directory computer object management:
+### `Write-PSSAKProgressBar`
 
-- **14 Properties**: ComputerName, DNSHostName, OperatingSystem, OperatingSystemVersion, DistinguishedName, Enabled, LastLogonDate, Description, Location, IPv4Address, SID, Created, Modified, MemberOf
-- **10 Methods**:
-  - `Get()` - Retrieve computer information from AD
-  - `Enable()` / `Disable()` - Manage account state
-  - `Move()` - Relocate to different OU
-  - `Delete()` - Remove from AD
-  - `Update()` - Apply property changes
-  - `Rename()` - Rename computer object
-  - `Refresh()` - Reload data from AD
-  - `GetGroupMembership()` - List group memberships
-  - `ToString()` - String representation
+Displays a progress bar with automatic percentage calculation and optional estimated time remaining (ETA).
 
-### Example Usage
+| Parameter | Type | Description |
+|---|---|---|
+| `-Activity` | String | Title displayed above the bar *(mandatory)* |
+| `-Current` | Int32 | Current item index |
+| `-Total` | Int32 | Total number of items |
+| `-Status` | String | Text below the bar (default: `Current / Total`) |
+| `-Id` | Int32 | Bar identifier for nested bars (default: `0`) |
+| `-ParentId` | Int32 | Parent bar identifier (default: `-1`) |
+| `-StartTime` | DateTime | Operation start time — enables ETA calculation |
+| `-Completed` | Switch | Closes the bar cleanly |
+| `-NoTimeEstimate` | Switch | Suppresses ETA even when `-StartTime` is provided |
+
+#### Example — Simple progress bar
 
 ```powershell
-# Create and retrieve computer information
-$computer = [ADComputer]::new('WORKSTATION-01')
-$computer.Get()
-Write-Output "OS: $($computer.OperatingSystem)"
+$files = Get-ChildItem -Path C:\Logs
+$start = [datetime]::UtcNow
+$i = 0
+foreach ($file in $files)
+{
+    $i++
+    Write-PSSAKProgressBar -Activity 'Processing log files' `
+        -Current $i -Total $files.Count -Status $file.Name -StartTime $start
+}
+Write-PSSAKProgressBar -Activity 'Processing log files' -Completed
+```
 
-# Manage computer accounts
-$computer.Enable()
-$computer.Description = 'Engineering Workstation'
-$computer.Update()
+#### Example — Nested progress bars
 
-# Query group membership
-$groups = $computer.GetGroupMembership()
+```powershell
+for ($s = 1; $s -le $servers.Count; $s++)
+{
+    Write-PSSAKProgressBar -Activity 'Servers' -Current $s -Total $servers.Count -Id 1
+    for ($f = 1; $f -le $files.Count; $f++)
+    {
+        Write-PSSAKProgressBar -Activity 'Files' -Current $f -Total $files.Count -Id 2 -ParentId 1
+    }
+    Write-PSSAKProgressBar -Activity 'Files' -Completed -Id 2
+}
+Write-PSSAKProgressBar -Activity 'Servers' -Completed -Id 1
 ```
 
 ## Requirements
 
 - **PowerShell**: 7.0 or higher
-- **Module**: Active Directory PowerShell module (part of RSAT)
-- **Permissions**: Appropriate Active Directory permissions for operations
 
 ## Installation
 
-*Installation instructions coming soon*
+```powershell
+Install-Module -Name PSSAK
+```
 
 ## Roadmap
 
-- [ ] ADUser class for user management
-- [ ] ADGroup class for group management
-- [ ] System management utilities
-- [ ] Network configuration tools
-- [ ] Service and process management
+- [x] Progress bar (`Write-PSSAKProgressBar`)
+- [ ] Structured logging (file, console, event log)
+- [ ] Output formatting utilities (tables, banners, colored output)
+- [ ] Timer / stopwatch helpers
+- [ ] Configuration management utilities
 
 ## Support
 
@@ -74,16 +87,13 @@ For issues, feature requests, or contributions, please visit the [GitHub reposit
 
 ## License
 
-MIT License - See LICENSE file for details.
+MIT License - See [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
 Contributions are welcome! Please ensure:
-- All code is well-documented in 4 languages
+
+- All code is documented in 4 languages (en-US, fr-FR, de-DE, pt-PT)
 - Tests achieve 85%+ code coverage
 - Code passes PSScriptAnalyzer validation
 - Commit messages follow the format: `<Type>: <Subject> — <Description>`
-
----
-
-**PSSAK** - Making PowerShell administration simpler, one class at a time. 🚀

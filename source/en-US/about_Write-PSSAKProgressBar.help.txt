@@ -1,0 +1,106 @@
+TOPIC
+    about_Write-PSSAKProgressBar
+
+SHORT DESCRIPTION
+    Displays a progress bar with automatic percentage calculation and optional
+    estimated time remaining (ETA).
+
+LONG DESCRIPTION
+    Write-PSSAKProgressBar wraps the built-in Write-Progress cmdlet to provide:
+
+        - Automatic percentage calculation from Current and Total values.
+        - Optional ETA calculation when a StartTime is provided.
+        - Support for nested progress bars via Id and ParentId parameters.
+        - Input validation with warnings for invalid values.
+        - Clean bar closure via the -Completed switch.
+
+    PARAMETERS
+
+        -Activity <String> [Mandatory]
+            The title displayed above the progress bar.
+
+        -Current <Int32>
+            The current item index. Clamped to 0 if negative, clamped to Total
+            if it exceeds Total.
+
+        -Total <Int32>
+            The total number of items. Must be greater than 0.
+
+        -Status <String>
+            Optional text displayed below the progress bar.
+            Defaults to "Current / Total" when not specified.
+
+        -Id <Int32>
+            The identifier of this progress bar. Used to display multiple nested
+            bars simultaneously. Defaults to 0.
+
+        -ParentId <Int32>
+            The identifier of the parent progress bar for nested display.
+            Defaults to -1 (no parent).
+
+        -StartTime <DateTime>
+            The datetime when the operation started. When provided, the function
+            calculates and displays the estimated time remaining.
+
+        -Completed <Switch>
+            Closes the progress bar. Call this at the end of a loop.
+
+        -NoTimeEstimate <Switch>
+            Suppresses ETA display even when -StartTime is provided.
+
+EXAMPLES
+    Example 1: Simple progress bar
+
+        $files = Get-ChildItem -Path C:\Logs
+        $i = 0
+        foreach ($file in $files)
+        {
+            $i++
+            Write-PSSAKProgressBar -Activity 'Processing log files' `
+                -Current $i -Total $files.Count -Status $file.Name
+        }
+        Write-PSSAKProgressBar -Activity 'Processing log files' -Completed
+
+    Example 2: Progress bar with ETA
+
+        $items = 1..500
+        $start = [datetime]::UtcNow
+        foreach ($item in $items)
+        {
+            Write-PSSAKProgressBar -Activity 'Importing data' `
+                -Current $item -Total $items.Count -StartTime $start
+            Start-Sleep -Milliseconds 10
+        }
+        Write-PSSAKProgressBar -Activity 'Importing data' -Completed
+
+    Example 3: Nested progress bars
+
+        for ($s = 1; $s -le $servers.Count; $s++)
+        {
+            Write-PSSAKProgressBar -Activity 'Servers' `
+                -Current $s -Total $servers.Count -Id 1
+            for ($f = 1; $f -le $files.Count; $f++)
+            {
+                Write-PSSAKProgressBar -Activity 'Files' `
+                    -Current $f -Total $files.Count -Id 2 -ParentId 1
+            }
+            Write-PSSAKProgressBar -Activity 'Files' -Completed -Id 2
+        }
+        Write-PSSAKProgressBar -Activity 'Servers' -Completed -Id 1
+
+NOTE:
+    - The function does not return any output ([OutputType([void])]).
+    - Percentage is rounded to one decimal place.
+    - ETA is not displayed when Current is 0 (rate cannot be calculated).
+
+TROUBLESHOOTING NOTE:
+    If the progress bar does not appear, ensure the PowerShell host supports
+    Write-Progress (e.g. not running in a non-interactive session).
+
+SEE ALSO
+    - Write-Progress
+    - about_PSSAK
+    - https://github.com/LaurentLienhard/PSSAK
+
+KEYWORDS
+    ProgressBar, Progress, ETA, Utility

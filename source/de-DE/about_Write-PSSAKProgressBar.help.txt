@@ -1,0 +1,109 @@
+TOPIC
+    about_Write-PSSAKProgressBar
+
+SHORT DESCRIPTION
+    Zeigt einen Fortschrittsbalken mit automatischer Prozentberechnung und
+    optionaler Schätzung der verbleibenden Zeit (ETA) an.
+
+LONG DESCRIPTION
+    Write-PSSAKProgressBar umschließt das integrierte Cmdlet Write-Progress
+    und bietet folgende Funktionen:
+
+        - Automatische Prozentberechnung aus den Werten Current und Total.
+        - Optionale ETA-Berechnung, wenn ein StartTime-Parameter angegeben wird.
+        - Unterstützung für verschachtelte Fortschrittsbalken über die Parameter
+          Id und ParentId.
+        - Eingabevalidierung mit Warnungen bei ungültigen Werten.
+        - Sauberes Schließen des Balkens über den Schalter -Completed.
+
+    PARAMETER
+
+        -Activity <String> [Obligatorisch]
+            Der Titel, der über dem Fortschrittsbalken angezeigt wird.
+
+        -Current <Int32>
+            Der aktuelle Elementindex. Wird auf 0 begrenzt, wenn negativ;
+            auf Total begrenzt, wenn er Total überschreitet.
+
+        -Total <Int32>
+            Die Gesamtanzahl der Elemente. Muss größer als 0 sein.
+
+        -Status <String>
+            Optionaler Text, der unter dem Fortschrittsbalken angezeigt wird.
+            Standard: "Current / Total".
+
+        -Id <Int32>
+            Der Bezeichner dieses Fortschrittsbalkens. Wird verwendet, um
+            mehrere verschachtelte Balken gleichzeitig anzuzeigen. Standard: 0.
+
+        -ParentId <Int32>
+            Der Bezeichner des übergeordneten Fortschrittsbalkens für die
+            Verschachtelung. Standard: -1 (kein übergeordneter Balken).
+
+        -StartTime <DateTime>
+            Datum und Uhrzeit des Vorgangsbeginns. Wenn angegeben, berechnet
+            die Funktion die geschätzte verbleibende Zeit und zeigt sie an.
+
+        -Completed <Switch>
+            Schließt den Fortschrittsbalken. Am Ende einer Schleife aufrufen.
+
+        -NoTimeEstimate <Switch>
+            Unterdrückt die ETA-Anzeige, auch wenn -StartTime angegeben wurde.
+
+EXAMPLES
+    Beispiel 1: Einfacher Fortschrittsbalken
+
+        $dateien = Get-ChildItem -Path C:\Logs
+        $i = 0
+        foreach ($datei in $dateien)
+        {
+            $i++
+            Write-PSSAKProgressBar -Activity 'Protokolle verarbeiten' `
+                -Current $i -Total $dateien.Count -Status $datei.Name
+        }
+        Write-PSSAKProgressBar -Activity 'Protokolle verarbeiten' -Completed
+
+    Beispiel 2: Fortschrittsbalken mit ETA
+
+        $elemente = 1..500
+        $start = [datetime]::UtcNow
+        foreach ($element in $elemente)
+        {
+            Write-PSSAKProgressBar -Activity 'Daten importieren' `
+                -Current $element -Total $elemente.Count -StartTime $start
+            Start-Sleep -Milliseconds 10
+        }
+        Write-PSSAKProgressBar -Activity 'Daten importieren' -Completed
+
+    Beispiel 3: Verschachtelte Fortschrittsbalken
+
+        for ($s = 1; $s -le $server.Count; $s++)
+        {
+            Write-PSSAKProgressBar -Activity 'Server' `
+                -Current $s -Total $server.Count -Id 1
+            for ($f = 1; $f -le $dateien.Count; $f++)
+            {
+                Write-PSSAKProgressBar -Activity 'Dateien' `
+                    -Current $f -Total $dateien.Count -Id 2 -ParentId 1
+            }
+            Write-PSSAKProgressBar -Activity 'Dateien' -Completed -Id 2
+        }
+        Write-PSSAKProgressBar -Activity 'Server' -Completed -Id 1
+
+NOTE:
+    - Die Funktion gibt keine Ausgabe zurück ([OutputType([void])]).
+    - Der Prozentsatz wird auf eine Dezimalstelle gerundet.
+    - ETA wird nicht angezeigt, wenn Current 0 ist (Rate kann nicht berechnet werden).
+
+TROUBLESHOOTING NOTE:
+    Wenn der Fortschrittsbalken nicht erscheint, stellen Sie sicher, dass der
+    PowerShell-Host Write-Progress unterstützt (z.B. nicht in einer
+    nicht-interaktiven Sitzung).
+
+SEE ALSO
+    - Write-Progress
+    - about_PSSAK
+    - https://github.com/LaurentLienhard/PSSAK
+
+KEYWORDS
+    Fortschrittsbalken, Fortschritt, ETA, Hilfsfunktion

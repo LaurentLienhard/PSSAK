@@ -1,0 +1,107 @@
+TOPIC
+    about_Write-PSSAKProgressBar
+
+SHORT DESCRIPTION
+    Affiche une barre de progression avec calcul automatique du pourcentage et
+    estimation optionnelle du temps restant (ETA).
+
+LONG DESCRIPTION
+    Write-PSSAKProgressBar encapsule le cmdlet natif Write-Progress pour fournir :
+
+        - Calcul automatique du pourcentage à partir des valeurs Current et Total.
+        - Calcul optionnel de l'ETA lorsqu'un paramètre StartTime est fourni.
+        - Prise en charge des barres de progression imbriquées via les paramètres
+          Id et ParentId.
+        - Validation des entrées avec avertissements pour les valeurs invalides.
+        - Fermeture propre de la barre via le commutateur -Completed.
+
+    PARAMÈTRES
+
+        -Activity <String> [Obligatoire]
+            Le titre affiché au-dessus de la barre de progression.
+
+        -Current <Int32>
+            L'index de l'élément courant. Limité à 0 s'il est négatif, limité à
+            Total s'il dépasse Total.
+
+        -Total <Int32>
+            Le nombre total d'éléments. Doit être supérieur à 0.
+
+        -Status <String>
+            Texte optionnel affiché sous la barre de progression.
+            Par défaut : "Current / Total".
+
+        -Id <Int32>
+            L'identifiant de cette barre de progression. Utilisé pour afficher
+            plusieurs barres imbriquées simultanément. Par défaut : 0.
+
+        -ParentId <Int32>
+            L'identifiant de la barre parente pour l'imbrication.
+            Par défaut : -1 (pas de parent).
+
+        -StartTime <DateTime>
+            La date et l'heure de début de l'opération. Lorsqu'il est fourni,
+            la fonction calcule et affiche le temps restant estimé.
+
+        -Completed <Switch>
+            Ferme la barre de progression. À appeler à la fin de la boucle.
+
+        -NoTimeEstimate <Switch>
+            Supprime l'affichage de l'ETA même si -StartTime est fourni.
+
+EXAMPLES
+    Exemple 1 : Barre de progression simple
+
+        $fichiers = Get-ChildItem -Path C:\Logs
+        $i = 0
+        foreach ($fichier in $fichiers)
+        {
+            $i++
+            Write-PSSAKProgressBar -Activity 'Traitement des journaux' `
+                -Current $i -Total $fichiers.Count -Status $fichier.Name
+        }
+        Write-PSSAKProgressBar -Activity 'Traitement des journaux' -Completed
+
+    Exemple 2 : Barre de progression avec ETA
+
+        $elements = 1..500
+        $debut = [datetime]::UtcNow
+        foreach ($element in $elements)
+        {
+            Write-PSSAKProgressBar -Activity 'Importation des données' `
+                -Current $element -Total $elements.Count -StartTime $debut
+            Start-Sleep -Milliseconds 10
+        }
+        Write-PSSAKProgressBar -Activity 'Importation des données' -Completed
+
+    Exemple 3 : Barres de progression imbriquées
+
+        for ($s = 1; $s -le $serveurs.Count; $s++)
+        {
+            Write-PSSAKProgressBar -Activity 'Serveurs' `
+                -Current $s -Total $serveurs.Count -Id 1
+            for ($f = 1; $f -le $fichiers.Count; $f++)
+            {
+                Write-PSSAKProgressBar -Activity 'Fichiers' `
+                    -Current $f -Total $fichiers.Count -Id 2 -ParentId 1
+            }
+            Write-PSSAKProgressBar -Activity 'Fichiers' -Completed -Id 2
+        }
+        Write-PSSAKProgressBar -Activity 'Serveurs' -Completed -Id 1
+
+NOTE:
+    - La fonction ne retourne aucune sortie ([OutputType([void])]).
+    - Le pourcentage est arrondi à une décimale.
+    - L'ETA n'est pas affiché lorsque Current vaut 0 (le taux ne peut être calculé).
+
+TROUBLESHOOTING NOTE:
+    Si la barre de progression n'apparaît pas, vérifiez que l'hôte PowerShell
+    prend en charge Write-Progress (par exemple, pas dans une session non interactive).
+
+SEE ALSO
+    - Write-Progress
+    - about_PSSAK
+    - https://github.com/LaurentLienhard/PSSAK
+
+KEYWORDS
+    BarreProgression, Progression, ETA, Utilitaire

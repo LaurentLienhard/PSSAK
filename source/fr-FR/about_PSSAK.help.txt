@@ -1,0 +1,48 @@
+TOPIC
+    about_PSSAK
+
+SHORT DESCRIPTION
+    PSSAK (PowerShell Swiss Army Knife) est un module de ressources PowerShell
+    fournissant des utilitaires de base pour d'autres modules : journalisation,
+    barres de progression, mise en forme des sorties, et plus encore.
+
+LONG DESCRIPTION
+    PSSAK est conçu pour être importé comme dépendance par d'autres modules
+    PowerShell. Il fournit un ensemble cohérent, testé et prêt à l'emploi de
+    fonctions utilitaires, afin de ne pas avoir à réimplémenter le même code
+    de base dans chaque module.
+
+    Capacités actuelles :
+        - Write-PSSAKProgressBar : Affiche une barre de progression avec calcul
+          automatique du pourcentage et estimation du temps restant (ETA).
+
+    Toutes les fonctions publiques respectent la convention de nommage :
+    <Verbe>-PSSAK<Nom>. Toutes les fonctions sont documentées en anglais,
+    français, allemand et portugais.
+
+EXAMPLES
+    PS C:\> Import-Module PSSAK
+
+    PS C:\> $fichiers = Get-ChildItem -Path C:\Logs
+    PS C:\> $debut = [datetime]::UtcNow
+    PS C:\> $i = 0
+    PS C:\> foreach ($fichier in $fichiers)
+    PS C:\> {
+    PS C:\>     $i++
+    PS C:\>     Write-PSSAKProgressBar -Activity 'Traitement' -Current $i -Total $fichiers.Count -StartTime $debut
+    PS C:\> }
+    PS C:\> Write-PSSAKProgressBar -Activity 'Traitement' -Completed
+
+NOTE:
+    Nécessite PowerShell 7.0 ou supérieur.
+    Merci à tous ceux qui ont contribué à ce module.
+
+TROUBLESHOOTING NOTE:
+    Pour les problèmes et les nouvelles versions, consultez le dépôt GitHub.
+
+SEE ALSO
+    - https://github.com/LaurentLienhard/PSSAK
+    - about_Write-PSSAKProgressBar
+
+KEYWORDS
+    Utilitaires, Journalisation, BarreProgression, ModuleRessource, Boîteàoutils

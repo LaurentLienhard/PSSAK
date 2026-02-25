@@ -11,6 +11,7 @@ output/
 *.suo
 *.user
 *.coverage
+*.xml
 .vs
 .psproj
 .sln
